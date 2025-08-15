@@ -7,9 +7,9 @@ format:
     github: https://github.com/uclacommschool/rp3
 logo: images/UCLACtrForCommSchoolingLogo.png
 logo-alt: UCLA Center for Community Schooling Logo
-editor: visual
 ---
 
+```{=html}
 <style>
 .navbar {
   background-color: #8BB8E8 !important; /* top bar color */
@@ -18,14 +18,16 @@ editor: visual
   color: black !important; /* text color */
 }
 </style>
-
+```
 
 # UCLA & UCLA-CSs
 
 ## UCLA & UCLA Community Schools
 
 :::{.card title = 'UCLA & UCLA Community Schools'}
-![](images/ucla-mann-rfk.png){width="50%"}
+
+![](images/ucla-mann-rfk.png){width="50%"} 
+
 :::
 
 ### Site Locations
@@ -160,7 +162,9 @@ kable(resource_tbl)
 ## Loyola Marymount University & Para Los Niños
 
 ::: {.card .flow title = "Loyola Marymount University & Para Los Niños"}
-![](images/lmu-pln.png){width="68%"}
+
+![](images/lmu-pln-3.png){width="55%"} 
+
 :::
 
 ### Site Locations
@@ -273,7 +277,8 @@ kable(policy_org_tbl)
 ## UC San Diego & San Diego Met High School
 
 ::: {.card .flow title = "UC San Diego & San Diego Met High School"}
-![](images/ucsd-sd-met.png){width="84%"}
+
+![](images/ucsd-sd-met.png){width="84%"} 
 :::
 
 ### Site Locations
