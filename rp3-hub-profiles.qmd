@@ -1,0 +1,382 @@
+---
+title: "RP3 Hub Profiles"
+author: " "
+format: 
+  dashboard:
+    nav-buttons: [github]
+    github: https://github.com/uclacommschool/rp3
+logo: images/UCLACtrForCommSchoolingLogo.png
+logo-alt: UCLA Center for Community Schooling Logo
+editor: visual
+---
+
+# UCLA & UCLA-CSs
+
+## UCLA & UCLA Community Schools 
+
+::: {.card .flow title = "UCLA & UCLA Community Schools"}
+![](images/ucla-mann-rfk.png){width=50%}
+:::
+
+### Site Locations
+```{r}
+#| title: "Site Locations"
+
+library(leaflet)
+library(sf)
+
+# --- 1) Load LA neighborhood polygons ---
+# Point this to your GeoJSON/Shapefile (can be a URL or local file path).
+# Example: neighborhoods_path <- "https://example.com/la_neighborhoods.geojson"
+neighborhoods_path <- file.path(".","data",
+                                "LA_Times_Neighborhood_Boundaries.geojson")
+
+#Note: geojson taken from
+#https://geohub.lacity.org/datasets/la-times-neighborhood-boundaries/explore
+
+# sf::st_read() works for GeoJSON URLs and local files, and for shapefiles (.shp)
+# If using a shapefile, provide the .shp path (and keep the other files in the same folder).
+neighborhoods <- st_read(neighborhoods_path, quiet = TRUE)
+
+neighborhoods <- neighborhoods[neighborhoods$name %in% 
+                                 c("Westwood", "Koreatown",
+                                   "Chesterfield Square"),]
+
+# Ensure polygons are in WGS84 (lat/lng) for Leaflet
+if (is.na(sf::st_crs(neighborhoods))) {
+  # Assume it's already WGS84 if unknown (common for some GeoJSONs)
+  sf::st_crs(neighborhoods) <- 4326
+} else if (sf::st_crs(neighborhoods)$epsg != 4326) {
+  neighborhoods <- sf::st_transform(neighborhoods, 4326)
+}
+
+# Try to find a sensible name column for labels
+name_col <- intersect(tolower(names(neighborhoods)), c("name","neighborhood","nhood","label","namelsad","area_name"))
+name_col <- if (length(name_col)) names(neighborhoods)[match(name_col[1], tolower(names(neighborhoods)))] else NA_character_
+if (!is.na(name_col)) neighborhoods$._label <- neighborhoods[[name_col]] else neighborhoods$._label <- "Neighborhood"
+
+# --- 2) Your original points ---
+ucla_coords <- c(lat = 34.07042619816593,
+                 lng = -118.44283075383971)
+ucla_comm_coords <- c(lat = 34.06003593671768, lng = -118.29711168278747)
+mann_ucla_coords <- c(lat = 33.976566717877404, lng = -118.31239262566687)
+
+locations <- data.frame(
+  name = c("UCLA", "UCLA Community School", "Mann UCLA Community School"),
+  lat = c(ucla_coords["lat"], ucla_comm_coords["lat"], mann_ucla_coords["lat"]),
+  lng = c(ucla_coords["lng"], ucla_comm_coords["lng"], mann_ucla_coords["lng"])
+)
+
+# --- 3) Build the map with polygons + markers ---
+leaflet() %>%
+  addTiles() %>%
+  addProviderTiles(providers$CartoDB.Positron) %>%
+  # Neighborhood polygons
+  addPolygons(
+    data = neighborhoods,
+    weight = 1,
+    color = "#666666",
+    fillColor = "#3182bd",
+    fillOpacity = 0.15,
+    label = ~as.character(._label),
+    highlightOptions = highlightOptions(weight = 2, color = "#000000", fillOpacity = 0.3, bringToFront = TRUE),
+    group = "LA Neighborhoods"
+  ) %>%
+  # Markers
+  addMarkers(data = locations, ~lng, ~lat, popup = ~name, group = "Schools") %>%
+  # Layer control
+  addLayersControl(
+    overlayGroups = c("LA Neighborhoods", "Schools/University"),
+    options = layersControlOptions(collapsed = FALSE)
+  ) %>%
+  # Fit to your points (or use sf::st_bbox(neighborhoods) to fit to polygons)
+  fitBounds(
+    lng1 = min(locations$lng - .01),
+    lat1 = min(locations$lat - .01),
+    lng2 = max(locations$lng + .01),
+    lat2 = max(locations$lat + .015)
+  )
+
+```
+
+
+## Redesign Strategy 
+
+::: {.card .flow title = "Redesign Strategy"}
+ 
+Redesigning high school by centering student agency through community-based research projects that challenge traditional structures and engage youth in civic inquiry. Our strategy integrates Youth Participatory Action Research (YPAR) into the AP Seminar and AP Research sequence, empowering students to investigate and challenge issues directly affecting their communities.
+
+:::
+
+
+### Organizations & Resources {.tabset}
+
+#### Policy Partners
+```{r}
+library(readxl)
+library(tidyverse)
+library(kableExtra)
+
+policy_tbl<-
+  read_excel(file.path(".", "data",
+                       "RP3 Policy Landscape Analysis.xlsx"),
+             sheet = "UCLA CS")
+
+colnames(policy_tbl)<-c("Organization/Network",
+                        "Description",
+                        "blank",
+                        "Resources",
+                        "Desc2")
+
+policy_org_tbl<-policy_tbl %>% select(`Organization/Network`,
+                            Description)
+kable(policy_org_tbl)
+
+```
+
+#### Resources
+
+```{r}
+
+resource_tbl<-policy_tbl %>% select(Resources, Desc2)
+colnames(resource_tbl)<-c("Resources", "Description")
+resource_tbl<-resource_tbl %>% filter(!is.na(Resources))
+kable(resource_tbl)
+
+```
+
+
+# LMU & PLN
+
+## Loyola Marymount University & Para Los Niños
+
+::: {.card .flow title = "Loyola Marymount University & Para Los Niños"}
+![](images/lmu-pln.png){width=68%}
+:::
+
+### Site Locations
+```{r}
+#| title: "Site Locations"
+
+# --- 1) Load LA neighborhood polygons ---
+# Point this to your GeoJSON/Shapefile (can be a URL or local file path).
+# Example: neighborhoods_path <- "https://example.com/la_neighborhoods.geojson"
+neighborhoods_path <- file.path(".","data",
+                                "LA_Times_Neighborhood_Boundaries.geojson")
+
+# sf::st_read() works for GeoJSON URLs and local files, and for shapefiles (.shp)
+# If using a shapefile, provide the .shp path (and keep the other files in the same folder).
+neighborhoods <- st_read(neighborhoods_path, quiet = TRUE)
+
+neighborhoods <- neighborhoods[neighborhoods$name %in%
+                                 c("Westchester", "Downtown"),]
+
+# Ensure polygons are in WGS84 (lat/lng) for Leaflet
+if (is.na(sf::st_crs(neighborhoods))) {
+  # Assume it's already WGS84 if unknown (common for some GeoJSONs)
+  sf::st_crs(neighborhoods) <- 4326
+} else if (sf::st_crs(neighborhoods)$epsg != 4326) {
+  neighborhoods <- sf::st_transform(neighborhoods, 4326)
+}
+
+# Try to find a sensible name column for labels
+name_col <- intersect(tolower(names(neighborhoods)), c("name","neighborhood","nhood","label","namelsad","area_name"))
+name_col <- if (length(name_col)) names(neighborhoods)[match(name_col[1], tolower(names(neighborhoods)))] else NA_character_
+if (!is.na(name_col)) neighborhoods$._label <- neighborhoods[[name_col]] else neighborhoods$._label <- "Neighborhood"
+
+# --- 2) Your original points ---
+lmu_coords <- c(lat = 33.97048664039175,
+                 lng = -118.41662347084278)
+pln_coords <- c(lat = 34.035986118568665, lng = -118.24763864624612)
+
+
+locations <- data.frame(
+  name = c("Loyola Marymount University", "Para Los Niños Charter Middle School"),
+  lat = c(lmu_coords["lat"], pln_coords["lat"]),
+  lng = c(lmu_coords["lng"], pln_coords["lng"])
+)
+
+# --- 3) Build the map with polygons + markers ---
+leaflet() %>%
+  addTiles() %>%
+  addProviderTiles(providers$CartoDB.Positron) %>%
+  # Neighborhood polygons
+  addPolygons(
+    data = neighborhoods,
+    weight = 1,
+    color = "#666666",
+    fillColor = "#3182bd",
+    fillOpacity = 0.15,
+    label = ~as.character(._label),
+    highlightOptions = highlightOptions(weight = 2, color = "#000000", fillOpacity = 0.3, bringToFront = TRUE),
+    group = "LA Neighborhoods"
+  ) %>%
+  # Markers
+  addMarkers(data = locations, ~lng, ~lat, popup = ~name, group = "Schools") %>%
+  # Layer control
+  addLayersControl(
+    overlayGroups = c("LA Neighborhoods", "School/University"),
+    options = layersControlOptions(collapsed = FALSE)
+  ) %>%
+  # Fit to your points (or use sf::st_bbox(neighborhoods) to fit to polygons)
+  fitBounds(
+    lng1 = min(locations$lng - .01),
+    lat1 = min(locations$lat - .01),
+    lng2 = max(locations$lng + .01),
+    lat2 = max(locations$lat + .015)
+  )
+
+```
+
+
+## Redesign Strategy 
+
+::: {.card .flow title = "Redesign Strategy"}
+ 
+Redesigning advisory periods to foster joy, strengthen teacher-student relationships, and enhance students’ sense of connection and belonging. Loyola Marymount University has partnered with PLN Charter Middle School in redesigning advisory periods to supporting students’ socioemotional learning.
+
+:::
+
+### Policy Partners
+```{r}
+#| title: "Policy Partners"
+
+policy_tbl<-
+  read_excel(file.path(".", "data",
+                       "RP3 Policy Landscape Analysis.xlsx"),
+             sheet = "LMU PLN")
+
+colnames(policy_tbl)<-c("Organization/Network",
+                        "Description",
+                        "blank",
+                        "Resources",
+                        "Desc2")
+
+policy_org_tbl<-policy_tbl %>% select(`Organization/Network`,
+                            Description)
+kable(policy_org_tbl)
+
+```
+
+
+# UCSD & San Diego Met HS
+
+## UC San Diego & San Diego Met High School
+
+::: {.card .flow title = "UC San Diego & San Diego Met High School"}
+![](images/ucsd-sd-met.png){width=84%}
+
+:::
+
+### Site Locations
+```{r}
+#| title: "Site Locations"
+
+# --- 1) Load SD neighborhood polygons ---
+# Point this to your GeoJSON/Shapefile (can be a URL or local file path).
+# Example: neighborhoods_path <- "https://example.com/la_neighborhoods.geojson"
+neighborhoods_path <- file.path(".","data",
+                                "sd_cmty_plan_datasd.geojson")
+
+#Note: geojson taken from this site:
+#https://data.sandiego.gov/datasets/community-planning-district-boundaries/
+
+# sf::st_read() works for GeoJSON URLs and local files, and for shapefiles (.shp)
+# If using a shapefile, provide the .shp path (and keep the other files in the same folder).
+neighborhoods <- st_read(neighborhoods_path, quiet = TRUE)
+
+neighborhoods<-neighborhoods %>% 
+  mutate(.label = cpname)
+
+neighborhoods <- neighborhoods[neighborhoods$cpname %in%
+                                 c("University",
+                                   "Clairemont Mesa"),]
+
+# Ensure polygons are in WGS84 (lat/lng) for Leaflet
+if (is.na(sf::st_crs(neighborhoods))) {
+  # Assume it's already WGS84 if unknown (common for some GeoJSONs)
+  sf::st_crs(neighborhoods) <- 4326
+} else if (sf::st_crs(neighborhoods)$epsg != 4326) {
+  neighborhoods <- sf::st_transform(neighborhoods, 4326)
+}
+
+# Try to find a sensible name column for labels
+name_col <- intersect(tolower(names(neighborhoods)), c("cpname","neighborhood","nhood","label","namelsad","area_name"))
+name_col <- if (length(name_col)) names(neighborhoods)[match(name_col[1], tolower(names(neighborhoods)))] else NA_character_
+if (!is.na(name_col)) neighborhoods$._label <- neighborhoods[[name_col]] else neighborhoods$._label <- "Neighborhood"
+
+# --- 2) Your original points ---
+ucsd_coords <- c(lat = 32.883086162490066,
+                 lng = -117.23372980181358)
+sd_met_coords <- c(lat = 32.80498973523318, lng = -117.16991113241174)
+
+
+locations <- data.frame(
+  name = c("UC San Diego", "San Diego Met High School"),
+  lat = c(ucsd_coords["lat"], sd_met_coords["lat"]),
+  lng = c(ucsd_coords["lng"], sd_met_coords["lng"])
+)
+
+# --- 3) Build the map with polygons + markers ---
+leaflet() %>%
+  addTiles() %>%
+  addProviderTiles(providers$CartoDB.Positron) %>%
+  # Neighborhood polygons
+  addPolygons(
+    data = neighborhoods,
+    weight = 1,
+    color = "#666666",
+    fillColor = "#3182bd",
+    fillOpacity = 0.15,
+    label = ~as.character(._label),
+    highlightOptions = highlightOptions(weight = 2, color = "#000000", fillOpacity = 0.3, bringToFront = TRUE),
+    group = "SD Neighborhoods"
+  ) %>%
+  # Markers
+  addMarkers(data = locations, ~lng, ~lat, popup = ~name, group = "Schools") %>%
+  # Layer control
+  addLayersControl(
+    overlayGroups = c("SD Neighborhoods", "School/University"),
+    options = layersControlOptions(collapsed = FALSE)
+  ) %>%
+  # Fit to your points (or use sf::st_bbox(neighborhoods) to fit to polygons)
+  fitBounds(
+    lng1 = min(locations$lng - .01),
+    lat1 = min(locations$lat - .01),
+    lng2 = max(locations$lng + .01),
+    lat2 = max(locations$lat + .015)
+  )
+
+```
+
+## Redesign Strategy 
+
+::: {.card .flow title = "Redesign Strategy"}
+ 
+Redesigning traditional assessment by centering the development of students’ empirical reasoning through community-based internships. The San Diego Science Project at UC San Diego has partnered with San Diego Met's Big Picture Learning community school to document, refine, and develop a replicable model for community schools wanting to implement authentic, community-centered assessment practices.
+
+:::
+
+### Policy Partners
+```{r}
+#| title: "Policy Partners"
+
+policy_tbl<-
+  read_excel(file.path(".", "data",
+                       "RP3 Policy Landscape Analysis.xlsx"),
+             sheet = "UCSD SD MET")
+
+colnames(policy_tbl)<-c("Organization/Network",
+                        "Description",
+                        "blank",
+                        "Resources",
+                        "Desc2")
+
+policy_org_tbl<-policy_tbl %>% select(`Organization/Network`,
+                            Description)
+kable(policy_org_tbl)
+
+```
+
+# SUPER-SD
+
