@@ -10,15 +10,26 @@ logo-alt: UCLA Center for Community Schooling Logo
 editor: visual
 ---
 
+<style>
+.navbar {
+  background-color: #8BB8E8 !important; /* top bar color */
+}
+.navbar a, .navbar-brand {
+  color: black !important; /* text color */
+}
+</style>
+
+
 # UCLA & UCLA-CSs
 
-## UCLA & UCLA Community Schools 
+## UCLA & UCLA Community Schools
 
-::: {.card .flow title = "UCLA & UCLA Community Schools"}
-![](images/ucla-mann-rfk.png){width=50%}
+:::{.card title = 'UCLA & UCLA Community Schools'}
+![](images/ucla-mann-rfk.png){width="50%"}
 :::
 
 ### Site Locations
+
 ```{r}
 #| title: "Site Locations"
 
@@ -99,19 +110,18 @@ leaflet() %>%
 
 ```
 
-
-## Redesign Strategy 
+## Redesign Strategy
 
 ::: {.card .flow title = "Redesign Strategy"}
- 
+
 Redesigning high school by centering student agency through community-based research projects that challenge traditional structures and engage youth in civic inquiry. Our strategy integrates Youth Participatory Action Research (YPAR) into the AP Seminar and AP Research sequence, empowering students to investigate and challenge issues directly affecting their communities.
 
 :::
 
-
 ### Organizations & Resources {.tabset}
 
 #### Policy Partners
+
 ```{r}
 library(readxl)
 library(tidyverse)
@@ -145,16 +155,16 @@ kable(resource_tbl)
 
 ```
 
-
 # LMU & PLN
 
 ## Loyola Marymount University & Para Los Niños
 
 ::: {.card .flow title = "Loyola Marymount University & Para Los Niños"}
-![](images/lmu-pln.png){width=68%}
+![](images/lmu-pln.png){width="68%"}
 :::
 
 ### Site Locations
+
 ```{r}
 #| title: "Site Locations"
 
@@ -228,16 +238,16 @@ leaflet() %>%
 
 ```
 
-
-## Redesign Strategy 
+## Redesign Strategy
 
 ::: {.card .flow title = "Redesign Strategy"}
- 
+
 Redesigning advisory periods to foster joy, strengthen teacher-student relationships, and enhance students’ sense of connection and belonging. Loyola Marymount University has partnered with PLN Charter Middle School in redesigning advisory periods to supporting students’ socioemotional learning.
 
 :::
 
 ### Policy Partners
+
 ```{r}
 #| title: "Policy Partners"
 
@@ -258,17 +268,16 @@ kable(policy_org_tbl)
 
 ```
 
-
 # UCSD & San Diego Met HS
 
 ## UC San Diego & San Diego Met High School
 
 ::: {.card .flow title = "UC San Diego & San Diego Met High School"}
-![](images/ucsd-sd-met.png){width=84%}
-
+![](images/ucsd-sd-met.png){width="84%"}
 :::
 
 ### Site Locations
+
 ```{r}
 #| title: "Site Locations"
 
@@ -349,15 +358,16 @@ leaflet() %>%
 
 ```
 
-## Redesign Strategy 
+## Redesign Strategy
 
 ::: {.card .flow title = "Redesign Strategy"}
- 
+
 Redesigning traditional assessment by centering the development of students’ empirical reasoning through community-based internships. The San Diego Science Project at UC San Diego has partnered with San Diego Met's Big Picture Learning community school to document, refine, and develop a replicable model for community schools wanting to implement authentic, community-centered assessment practices.
 
 :::
 
 ### Policy Partners
+
 ```{r}
 #| title: "Policy Partners"
 
@@ -380,3 +390,165 @@ kable(policy_org_tbl)
 
 # SUPER-SD
 
+## SDUSD, SDSU, SDEA & UCSD
+
+::: {.card .flow title = "SDUSD, SDSU, SDEA & UCSD"}
+
+![](images/super-sd-logo.png)
+
+:::
+
+### Site Locations
+
+```{r}
+#| title: "Site Locations"
+
+# --- 1) Load SD neighborhood polygons ---
+# Point this to your GeoJSON/Shapefile (can be a URL or local file path).
+# Example: neighborhoods_path <- "https://example.com/la_neighborhoods.geojson"
+neighborhoods_path <- file.path(".","data",
+                                "sd_cmty_plan_datasd.geojson")
+
+#Note: geojson taken from this site:
+#https://data.sandiego.gov/datasets/community-planning-district-boundaries/
+
+# sf::st_read() works for GeoJSON URLs and local files, and for shapefiles (.shp)
+# If using a shapefile, provide the .shp path (and keep the other files in the same folder).
+neighborhoods <- st_read(neighborhoods_path, quiet = TRUE)
+
+neighborhoods<-neighborhoods %>% 
+  mutate(.label = cpname)
+
+neighborhoods <- 
+  neighborhoods[neighborhoods$cpname %in%
+                  c("University","Clairemont Mesa",
+                    "Mission Valley", "College Area",
+                    "Mid-City:Kensington-Talmadge",
+                    "Mid-City:Eastern Area",
+                    "North Park",
+                    "Encanto Neighborhoods",
+                    "Skyline-Paradise Hills"),]
+
+# Ensure polygons are in WGS84 (lat/lng) for Leaflet
+if (is.na(sf::st_crs(neighborhoods))) {
+  # Assume it's already WGS84 if unknown (common for some GeoJSONs)
+  sf::st_crs(neighborhoods) <- 4326
+} else if (sf::st_crs(neighborhoods)$epsg != 4326) {
+  neighborhoods <- sf::st_transform(neighborhoods, 4326)
+}
+
+# Try to find a sensible name column for labels
+name_col <- intersect(tolower(names(neighborhoods)), c("cpname","neighborhood","nhood","label","namelsad","area_name"))
+name_col <- if (length(name_col)) names(neighborhoods)[match(name_col[1], tolower(names(neighborhoods)))] else NA_character_
+if (!is.na(name_col)) neighborhoods$._label <- neighborhoods[[name_col]] else neighborhoods$._label <- "Neighborhood"
+
+# --- 2) Your original points ---
+
+hoover_hs_coords <- c(lat = 32.755847899305465,
+                 lng = -117.09787393660977)
+
+alba_comm_coords <- c(lat = 32.75079444095799,
+                 lng = -117.1347722765654)
+
+crawford_hs_coords <- c(lat = 32.75217433222308,
+                 lng = -117.0762778933465)
+
+lincoln_hs_coords <- c(lat = 32.70341730947367,
+                 lng = -117.08962800720498)
+
+morse_hs_coords <- c(lat = 32.701094835096995,
+                 lng = -117.04857330076982)
+madison_hs_coords <- c(lat = 32.83137641266434,
+                 lng = -117.17368915052934)
+sdea_coords <- c(lat = 32.78542692043039,
+                 lng = -117.11234965065862)
+
+ucsd_coords <- c(lat = 32.87546024737205,
+                 lng = -117.23227618433795)
+
+sdsu_coords <- c(lat = 32.77494645150418,
+                 lng = -117.06834210124296)
+
+
+locations <- data.frame(
+  name = c("Hoover High School",
+           "Alba Community Day School",
+           "Crawford Senior High School",
+           "Lincoln Senior High School",
+           "Morse High School",
+           "Madison High School",
+           "San Diego Education Association",
+           "UC San Diego",
+           "San Diego State University"),
+  lat = c(hoover_hs_coords["lat"], alba_comm_coords["lat"],
+          crawford_hs_coords["lat"], lincoln_hs_coords["lat"],
+          morse_hs_coords["lat"], madison_hs_coords["lat"],
+          sdea_coords["lat"], ucsd_coords["lat"],
+          sdsu_coords["lat"]),
+  lng = c(hoover_hs_coords["lng"], alba_comm_coords["lng"],
+          crawford_hs_coords["lng"], lincoln_hs_coords["lng"],
+          morse_hs_coords["lng"], madison_hs_coords["lng"],
+          sdea_coords["lng"], ucsd_coords["lng"],
+          sdsu_coords["lng"]))
+
+# --- 3) Build the map with polygons + markers ---
+leaflet() %>%
+  addTiles() %>%
+  addProviderTiles(providers$CartoDB.Positron) %>%
+  # Neighborhood polygons
+  addPolygons(
+    data = neighborhoods,
+    weight = 1,
+    color = "#666666",
+    fillColor = "#3182bd",
+    fillOpacity = 0.15,
+    label = ~as.character(._label),
+    highlightOptions = highlightOptions(weight = 2, color = "#000000", fillOpacity = 0.3, bringToFront = TRUE),
+    group = "SD Neighborhoods"
+  ) %>%
+  # Markers
+  addMarkers(data = locations, ~lng, ~lat, popup = ~name, group = "Schools") %>%
+  # Layer control
+  addLayersControl(
+    overlayGroups = c("SD Neighborhoods", "Sites"),
+    options = layersControlOptions(collapsed = FALSE)
+  ) %>%
+  # Fit to your points (or use sf::st_bbox(neighborhoods) to fit to polygons)
+  fitBounds(
+    lng1 = min(locations$lng - .01),
+    lat1 = min(locations$lat - .01),
+    lng2 = max(locations$lng + .01),
+    lat2 = max(locations$lat + .015)
+  )
+
+```
+
+## Redesign Strategy
+
+::: {.card .flow title = "Redesign Strategy"}
+
+Empowering school leaders through a 12-month action research project focused on strengthening redesign efforts. Through a collaborative initiative involving San Diego State University, UC San Diego, San Diego Unified, and the San Diego Education Association, this effort will strengthen collaboration across all six SDUSD community high schools in their redesign efforts, with Hoover High School serving as the lead organization.
+
+:::
+
+### Policy Partners
+
+```{r}
+#| title: "Policy Partners"
+
+policy_tbl<-
+  read_excel(file.path(".", "data",
+                       "RP3 Policy Landscape Analysis.xlsx"),
+             sheet = "SUPER-SD")
+
+colnames(policy_tbl)<-c("Organization/Network",
+                        "Description",
+                        "blank",
+                        "Resources",
+                        "Desc2")
+
+policy_org_tbl<-policy_tbl %>% select(`Organization/Network`,
+                            Description)
+kable(policy_org_tbl)
+
+```
