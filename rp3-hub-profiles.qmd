@@ -1,10 +1,7 @@
 ---
 title: "RP3 Hub Profiles"
 author: " "
-format: 
-  dashboard:
-    nav-buttons: [github]
-    github: https://github.com/uclacommschool/rp3
+format: dashboard
 logo: images/UCLACtrForCommSchoolingLogo.png
 logo-alt: UCLA Center for Community Schooling Logo
 ---
